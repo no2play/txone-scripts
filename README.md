@@ -1,34 +1,40 @@
-# 🛡️ TXOne Edge IPS Test Suite
+# TXOne Edge IPS DoS Protection Test Suite
 
-This repository contains automated test scripts to evaluate and validate the behavior and effectiveness of **TXOne Edge IPS** under various threat scenarios. These tests are designed for use in controlled OT/ICS lab environments to simulate real-world attack conditions and verify IPS detection and response.
+This repository contains a collection of test scripts designed to validate DoS protection capabilities in TXOne Edge IPS.
 
-## 📚 Test Cases Overview
+## DoS Protection Tests
 
-| Test Case ID | Test Name                     | Description                               |
-|--------------|-------------------------------|-------------------------------------------|
-| TC-01        | DoS Protection (SYN Flood)     | Simulates a SYN flood attack to verify DoS detection, logging, and mitigation. |
-| TC-02        | *(Coming Soon)*                | Example: Protocol Abuse – Modbus Scan     |
-| TC-03        | *(Coming Soon)*                | Example: Unauthorized File Transfer       |
-| TC-04        | *(Coming Soon)*                | Example: L2 MAC Spoofing Detection        |
-| ...          | *(More test cases coming)*     |                                           |
+This suite includes tests for various types of DoS attacks, leveraging the following attack types:
+- TCP SYN Flood
+- UDP Flood
+- ICMP Flood
+- TCP SYN Scan
+- TCP NULL Scan
+- TCP Xmas Scan
+- Ping Sweep
 
----
+## Prerequisites
 
-## ✅ Prerequisites
+- **TXOne Edge IPS** is deployed inline or in bridge mode between the attacker and target OT device.
+- At least one OT asset (e.g., PLC or HMI) is accessible on the network.
+- The IPS rule set includes default or custom DoS protection rules.
+- **Test Workstation**: Kali Linux or another system with `hping3`, `nmap`, or similar tools installed.
 
-- **TXOne Edge IPS** deployed in **inline** or **bridge mode**.
-- At least one OT asset (e.g., PLC, HMI) reachable from test host.
-- Rulesets enabled for the test case being executed.
-- Test machine (e.g., Kali Linux or Linux workstation) with:
-  - Python 3.x
-  - `hping3`, `nping`, `slowloris`, or other required tools
-  - Root access (for raw packet tools)
+## Available Tests
 
----
+This test suite includes the following attack types:
 
-## 🚀 Running a Test
+- **TCP SYN Flood**
+- **UDP Flood**
+- **ICMP Flood**
+- **TCP SYN Scan**
+- **TCP NULL Scan**
+- **TCP Xmas Scan**
+- **Ping Sweep**
 
-Each test script is a standalone Python file. To run a test:
+## Usage
+
+To run a DoS attack test, use the following command structure:
 
 ```bash
-sudo python3 <script_name>.py <TARGET-IP> <DURATION/OPTIONS>
+python3 test-dos-attack.py <attack_type> <target_ip> <duration>
