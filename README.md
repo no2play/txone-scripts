@@ -32,33 +32,72 @@ chmod +x cpsdr_simulator.py dos_attack_simulator.py
 
 ## 🚨 CPSDR Event Generator
 
-Simulate a wide range of malicious patterns that map to MITRE ATT&CK tactics and techniques.
+This is a Python-based simulation tool designed to trigger specific cybersecurity detection rules in a test environment, primarily for validating TXOne CPSDR (Cyber-Physical Systems Detection & Response) detections. 
 
-📌 Usage
-python3 cpsdr_simulator.py -h
-🧪 Example
-Run a simulated attack for a Cobalt Strike Malleable Profile:
+The script simulates a variety of attack techniques such as lateral movement, service abuse, suspicious user agents, and port scanning.
+
+---
+
+## 🛠 Requirements
+
+- Python 3
+- `nmap`
+- `smbclient`
+- `rpcclient`
+- `impacket` tools (`wmiexec.py`, `psexec.py`)
+- `requests` library (`pip install requests`)
+
+Ensure the attacker machine (e.g., Kali Linux) has access to these tools.
+
+---
+
+## 🚀 Usage
 
 ```bash
-python3 cpsdr_simulator.py -o 2 -t 192.168.1.10
+python3 simulate.py -o <rule_id> -t <target_ip> [-u <username> -p <password>]
 ```
 
-List of options (-o) supported:
-Option	Pattern Description
-- 1	BabyShark Agent Pattern
-- 2	Cobalt Strike Malleable Profile
-- 3	WannaCry Killswitch Domain
-- 4	Possible Lateral Tool Transfer via SMB
-- 6	Execution Via WMI
-- 13	CobaltStrike Malleable OCSP Profile
-- 14	PwnDrp Access
-- 19	Raw Paste Service Access
-- 20	Telegram API Access
-- 23	Cobalt Strike Command and Control Beacon
-- 24	Suspicious User Agent
-- 25	Suspicious Base64 Encoded User-Agent
+Required Parameters
+```bash
+-o, --option — Rule number to simulate (see list below)
+-t, --target — Target IP or hostname (required for most rules)
+-u, --username — Username for authentication (required for certain rules)
+-p, --password — Password for authentication (required for certain rules)
+```
 
-⚠️ **Note: Some patterns are network-based and require a reachable target IP.**
+## 🧪 Supported Rules
+
+| Rule ID | Description                                         | Requires Auth |
+|---------|-----------------------------------------------------|---------------|
+| 5       | Possible Lateral Tool Transfer via SMB             | ✅             |
+| 6       | Remote System Discovery Via RPC                    | ✅             |
+| 7       | Execution Via WMI                                  | ✅             |
+| 16      | Spoolss Named Pipe Access via SMB                  | ✅             |
+| 17      | Possible PsExec Execution                          | ✅             |
+| 25      | Suspicious User Agent                              | ❌             |
+| 26      | Suspicious Base64 Encoded User-Agent               | ❌             |
+| 30      | Potential Network Sweep Detected                   | ❌             |
+| 31      | Potential Port Scan Detected                       | ❌             |
+
+
+## 🧑‍💻 Examples
+
+Simulate PsExec (Rule 17):
+```bash
+python3 simulate.py -o 17 -t 192.168.1.100 -u admin -p P@ssw0rd!
+```
+Simulate Base64 User-Agent (Rule 26):
+```bash
+python3 simulate.py -o 26 -t 192.168.1.100
+```
+
+## ⚠️ Notes
+
+- Use only in isolated, controlled environments (test labs).
+- Some rules require valid credentials and target services (e.g., SMB, RPC) to be active.
+- `impacket` tools must be in your `$PATH`.
+
+---
 
 ## 💣 DoS Attack Simulator
 
