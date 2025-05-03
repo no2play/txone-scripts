@@ -7,6 +7,12 @@ This script is designed to test a wide range of Modbus TCP function codes agains
 ```bash
 pip install pymodbus
 ```
+✅ How to Use `install_requirements.sh`
+```bash
+chmod +x install_requirements.sh
+./install_requirements.sh
+```
+This will create a local virtual environment and install pymodbus.
 
 ## 🚀 Usage
 ```bash
