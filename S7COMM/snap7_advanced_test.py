@@ -1,15 +1,20 @@
 import argparse
 import snap7
 from snap7.util import *
-from snap7 import areas
+from snap7 import client
+
+# Define area constants as required
+PE = 0x81  # Inputs (PE)
+PA = 0x82  # Outputs (PA)
+MK = 0x83  # Flags (MK)
 
 def connect(ip, rack, slot):
     print(f"[+] Connecting to {ip} (Rack={rack}, Slot={slot})...")
-    client = snap7.client.Client()
-    client.connect(ip, rack, slot)
-    if client.get_connected():
+    plc_client = snap7.client.Client()
+    plc_client.connect(ip, rack, slot)
+    if plc_client.get_connected():
         print("[+] Connected successfully!")
-        return client
+        return plc_client
     else:
         print("[-] Connection failed.")
         return None
@@ -29,17 +34,17 @@ def write_db(client, db_num, start, value):
 
 def read_inputs(client, size=1):
     print(f"[*] Reading Inputs (size: {size})")
-    data = client.read_area(areas.PE, 0, 0, size)
+    data = client.read_area(PE, 0, 0, size)
     print(f"[+] Input bytes: {data.hex()}")
 
 def read_outputs(client, size=1):
     print(f"[*] Reading Outputs (size: {size})")
-    data = client.read_area(areas.PA, 0, 0, size)
+    data = client.read_area(PA, 0, 0, size)
     print(f"[+] Output bytes: {data.hex()}")
 
 def read_flags(client, size=1):
     print(f"[*] Reading Flags (size: {size})")
-    data = client.read_area(areas.MK, 0, 0, size)
+    data = client.read_area(MK, 0, 0, size)
     print(f"[+] Flags: {data.hex()}")
 
 def test_all(client):
@@ -66,25 +71,25 @@ if __name__ == "__main__":
     parser.add_argument("--value", type=int, help="Value to write (for db-write mode)")
 
     args = parser.parse_args()
-    client = connect(args.target, args.rack, args.slot)
-    if not client:
+    plc_client = connect(args.target, args.rack, args.slot)
+    if not plc_client:
         exit(1)
 
     try:
         if args.mode == 'db-read':
-            read_db(client, args.db, args.start, args.size)
+            read_db(plc_client, args.db, args.start, args.size)
         elif args.mode == 'db-write':
             if args.value is None:
                 print("[-] Please specify --value for db-write mode")
             else:
-                write_db(client, args.db, args.start, args.value)
+                write_db(plc_client, args.db, args.start, args.value)
         elif args.mode == 'inputs':
-            read_inputs(client, args.size)
+            read_inputs(plc_client, args.size)
         elif args.mode == 'outputs':
-            read_outputs(client, args.size)
+            read_outputs(plc_client, args.size)
         elif args.mode == 'flags':
-            read_flags(client, args.size)
+            read_flags(plc_client, args.size)
         elif args.mode == 'all':
-            test_all(client)
+            test_all(plc_client)
     finally:
-        disconnect(client)
+        disconnect(plc_client)
