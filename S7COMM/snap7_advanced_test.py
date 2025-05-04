@@ -1,9 +1,7 @@
-#!/usr/bin/env python3
-
 import argparse
 import snap7
 from snap7.util import *
-from snap7.snap7types import *
+from snap7 import areas
 
 def connect(ip, rack, slot):
     print(f"[+] Connecting to {ip} (Rack={rack}, Slot={slot})...")
@@ -31,17 +29,17 @@ def write_db(client, db_num, start, value):
 
 def read_inputs(client, size=1):
     print(f"[*] Reading Inputs (size: {size})")
-    data = client.read_area(areas['PE'], 0, 0, size)
+    data = client.read_area(areas.PE, 0, 0, size)
     print(f"[+] Input bytes: {data.hex()}")
 
 def read_outputs(client, size=1):
     print(f"[*] Reading Outputs (size: {size})")
-    data = client.read_area(areas['PA'], 0, 0, size)
+    data = client.read_area(areas.PA, 0, 0, size)
     print(f"[+] Output bytes: {data.hex()}")
 
 def read_flags(client, size=1):
     print(f"[*] Reading Flags (size: {size})")
-    data = client.read_area(areas['MK'], 0, 0, size)
+    data = client.read_area(areas.MK, 0, 0, size)
     print(f"[+] Flags: {data.hex()}")
 
 def test_all(client):
