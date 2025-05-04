@@ -1,3 +1,82 @@
+# Advanced S7 Protocol Scanner
+
+A Python-based scanner for Siemens S7 devices over ISO-on-TCP (port 102), designed for penetration testing and network diagnostics. This tool mimics certain Snap7 behaviors and explores supported job functions and user data subfunctions.
+
+---
+
+## ⚠️ Disclaimer
+
+This tool is intended **solely for authorized testing and educational purposes**. Unauthorized scanning of industrial control systems (ICS) is illegal and dangerous. Always obtain proper permission before use.
+
+---
+
+## Features
+
+- Scans Siemens S7 PLCs over port 102
+- Supports two scan modes:
+  - `job`: Sends S7 job function codes (e.g., Setup Communication, Read Var, etc.)
+  - `userdata`: Sends S7 UserData function group and subfunction codes
+- Customizable scan parameters (function codes, groups, and subfunctions)
+- Built using raw socket and Scapy (without `scapy.contrib.s7comm`)
+
+---
+
+## Requirements
+
+- Python 3.6+
+- [Scapy](https://scapy.readthedocs.io/en/latest/)
+
+Install Scapy via pip:
+
+```bash
+pip install scapy
+```
+
+## Usage
+
+```bash
+python3 s7_scan.py <target-ip> --mode <job|userdata> [options]
+```
+## Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `target` | Target IP address of the S7 device |
+| `--port`	| TCP port to use (default: `102`) |
+| `--mode` | Scan mode: job for S7 `job` functions or `userdata` for UserData functions |
+| `--job-funcs` |	Comma-separated list of job function codes (e.g., `0x04,0xF0`) |
+| `--user-groups` |	Comma-separated list of user data function groups (e.g., `0x0,0x3`) |
+| `--user-subfuncs` |	Comma-separated list of subfunction codes (used only for FG 0x0) |
+
+## Example Scans
+
+**Default Job Scan**
+```bash
+python3 s7_scan_advanced.py 192.168.1.100 --mode job
+```
+**Custom Job Codes**
+```bash
+python3 s7_scan_advanced.py 192.168.1.100 --mode job --job-funcs 0x04,0x05
+```
+**Default UserData Scan**
+```bash
+python3 s7_scan_advanced.py 192.168.1.100 --mode userdata
+```
+**Specific UserData Group and Subfunctions**
+```bash
+python3 s7_scan_advanced.py 192.168.1.100 --mode userdata --user-groups 0x0 --user-subfuncs 0x00,0x03,0x09
+```
+
+## Output
+
+The script prints each function or subfunction it sends, and whether the connection is successful. Responses are not deeply parsed unless implemented with further protocol logic.
+
+## TODO
+
+- Implement response parsing for known S7 function codes
+- Add logging and PCAP output
+- Add support for TLS (if applicable in newer S7 firmware)
+
 # Snap7 S7Comm Test Tool
 
 This script is designed to interact with Siemens S7 PLCs using the Snap7 library. It can perform various tasks, such as reading and writing data blocks (DB), reading PLC inputs and outputs, and detecting specific job and user data function codes in the communication protocol.
