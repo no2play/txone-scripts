@@ -4,6 +4,10 @@ import argparse
 import snap7
 from snap7.util import *
 
+# Function to parse hexadecimal input
+def parse_hex(value):
+    return int(value, 16)
+
 def connect(ip, rack, slot):
     print(f"[+] Connecting to {ip} (Rack={rack}, Slot={slot})...")
     client = snap7.client.Client()
@@ -95,9 +99,9 @@ if __name__ == "__main__":
     parser.add_argument("--start", type=int, default=0, help="Start byte address")
     parser.add_argument("--size", type=int, default=4, help="Size of data to read")
     parser.add_argument("--value", type=int, help="Value to write (for db-write mode)")
-    parser.add_argument("--job-code", type=int, base=16, help="Job function code to detect (for job mode)")
-    parser.add_argument("--group-code", type=int, base=16, help="User data function group code to detect (for userdata mode)")
-    parser.add_argument("--sub-function", type=int, base=16, help="Sub-function code to detect (for userdata mode)")
+    parser.add_argument("--job-code", type=parse_hex, help="Job function code to detect (for job mode)")
+    parser.add_argument("--group-code", type=parse_hex, help="User data function group code to detect (for userdata mode)")
+    parser.add_argument("--sub-function", type=parse_hex, help="Sub-function code to detect (for userdata mode)")
 
     args = parser.parse_args()
     client = connect(args.target, args.rack, args.slot)
