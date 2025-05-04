@@ -28,7 +28,7 @@ pip install python-snap7
 ## Usage
 **General Syntax*
 ```bash
-python3 s7_test.py -t <PLC_IP> -r <RACK> -s <SLOT> -m <MODE> [OPTIONS]
+python3 snap7_advanced_test.py -t <PLC_IP> -r <RACK> -s <SLOT> -m <MODE> [OPTIONS]
 ```
 **Available Modes**
 - `db-read`: Read data from a specified data block (DB).
@@ -43,31 +43,31 @@ python3 s7_test.py -t <PLC_IP> -r <RACK> -s <SLOT> -m <MODE> [OPTIONS]
 **Example Commands**
 1. Read a Data Block (DB)
 ```bash
-python3 s7_test.py -t 192.168.0.100 -r 0 -s 1 -m db-read --db 1 --start 0 --size 4
+python3 snap7_advanced_test.py -t 192.168.0.100 -r 0 -s 1 -m db-read --db 1 --start 0 --size 4
 ```
 - This will read 4 bytes from DB1 starting from address 0.
 
 2. Write to a Data Block (DB)
 ```bash
-python3 s7_test.py -t 192.168.0.100 -r 0 -s 1 -m db-write --db 1 --start 0 --value 1234
+python3 snap7_advanced_test.py -t 192.168.0.100 -r 0 -s 1 -m db-write --db 1 --start 0 --value 1234
 ```
 - This will write the integer value 1234 to DB1 starting from address 0.
 
 3. Read PLC Inputs
 ```bash
-python3 s7_test.py -t 192.168.0.100 -r 0 -s 1 -m inputs --size 2
+python3 snap7_advanced_test.py -t 192.168.0.100 -r 0 -s 1 -m inputs --size 2
 ```
 - This will read 2 bytes from the input area.
 
 4. Detect Job Function Code
 ```bash
-python3 s7_test.py -t 192.168.0.100 -r 0 -s 1 -m job --job-code 0x1A
+python3 snap7_advanced_test.py -t 192.168.0.100 -r 0 -s 1 -m job --job-code 0x1A
 ```
 - This will detect the job function 0x1A.
 
 5. Detect User Data Function Group and Sub-function
 ```bash
-python3 s7_test.py -t 192.168.0.100 -r 0 -s 1 -m userdata --group-code 0x0 --sub-function 0x03
+python3 snap7_advanced_test.py -t 192.168.0.100 -r 0 -s 1 -m userdata --group-code 0x0 --sub-function 0x03
 ```
 - This will detect the user data function group 0x0 and sub-function 0x03.
 
