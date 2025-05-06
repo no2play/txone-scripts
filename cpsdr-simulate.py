@@ -5,13 +5,19 @@ import subprocess
 import base64
 import requests
 import sys
+from impacket.examples import logger
+from impacket.examples.smbexec import RemoteShell
+from impacket.smbconnection import SMBConnection
+
+# Enable Impacket logging
+logger.init()
 
 rule_descriptions = {
     5: "Possible Lateral Tool Transfer via SMB",
     6: "Remote System Discovery Via RPC",
-    7: "Execution Via WMI",
+    7: "Execution Via WMI (Impacket)",
     16: "Spoolss Named Pipe Access via SMB",
-    17: "Possible PsExec Execution",
+    17: "Possible PsExec Execution (Impacket)",
     25: "Suspicious User Agent",
     26: "Suspicious Base64 Encoded User-Agent",
     30: "Potential Network Sweep Detected",
@@ -48,28 +54,40 @@ def simulate_6(target):  # RPC Discovery
     print(f"[+] Simulating RPC Discovery on {target}...")
     subprocess.run(["rpcclient", "-U", get_cred_str(), target, "-c", "enumdomusers"])
 
-def simulate_7(target):  # WMI Exec
-    print(f"[+] Simulating WMI Execution on {target}...")
-    subprocess.run(["wmiexec.py", f"{args.username}:{args.password}@{target}", "ipconfig"], check=False)
+def simulate_7(target):  # WMI Exec (Impacket)
+    print(f"[+] Simulating WMI Execution on {target} using Impacket...")
+    try:
+        subprocess.run(["wmiexec.py", f"{args.username}:{args.password}@{target}", "ipconfig"], check=False)
+    except Exception as e:
+        print(f"[!] WMI execution failed: {e}")
 
 def simulate_16(target):  # Spoolss Named Pipe
     print(f"[+] Simulating Spoolss Named Pipe Access on {target}...")
     subprocess.run(["rpcclient", "-U", get_cred_str(), target, "-c", "netshareenumall"])
 
-def simulate_17(target):  # PsExec Execution
-    print(f"[+] Simulating PsExec Execution on {target}...")
-    subprocess.run(["psexec.py", f"{args.username}:{args.password}@{target}", "cmd.exe"], check=False)
+def simulate_17(target):  # PsExec (Impacket)
+    print(f"[+] Simulating PsExec Execution on {target} using Impacket...")
+    try:
+        subprocess.run(["psexec.py", f"{args.username}:{args.password}@{target}", "cmd.exe"], check=False)
+    except Exception as e:
+        print(f"[!] PsExec execution failed: {e}")
 
 def simulate_25(target):  # Suspicious User-Agent
     print(f"[+] Sending Suspicious User-Agent to {target}...")
     headers = {"User-Agent": "python-requests/evil-miner"}
-    requests.get(f"http://{target}", headers=headers)
+    try:
+        requests.get(f"http://{target}", headers=headers, timeout=5)
+    except Exception as e:
+        print(f"[!] HTTP request failed: {e}")
 
 def simulate_26(target):  # Base64 User-Agent
     print(f"[+] Sending Base64 User-Agent to {target}...")
     b64_agent = base64.b64encode(b"malicious-agent").decode()
     headers = {"User-Agent": b64_agent}
-    requests.get(f"http://{target}", headers=headers)
+    try:
+        requests.get(f"http://{target}", headers=headers, timeout=5)
+    except Exception as e:
+        print(f"[!] HTTP request failed: {e}")
 
 def simulate_30(target):  # Nmap Sweep
     print(f"[+] Running Nmap Sweep on {target}...")
