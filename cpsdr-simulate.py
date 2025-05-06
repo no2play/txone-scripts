@@ -5,9 +5,6 @@ import subprocess
 import base64
 import requests
 import sys
-from impacket.examples import logger
-from impacket.examples.smbexec import RemoteShell
-from impacket.smbconnection import SMBConnection
 
 # Enable Impacket logging
 logger.init()
@@ -104,10 +101,11 @@ def simulate_5(target):  # RPC Discovery
     print(f"[+] Simulating RPC Discovery on {target}...")
     subprocess.run(["rpcclient", "-U", get_cred_str(), target, "-c", "enumdomusers"])
 
-def simulate_6(target):  # WMI Exec (Impacket)
-    print(f"[+] Simulating WMI Execution on {target} using Impacket...")
+def simulate_6(target):  # WMI Exec (alternative)
+    print(f"[+] Simulating WMI Execution on {target}...")
+    # Use an alternative method like WinRM or PsExec here
     try:
-        subprocess.run(["wmiexec.py", f"{args.username}:{args.password}@{target}", "ipconfig"], check=False)
+        subprocess.run(["psexec.py", f"{args.username}:{args.password}@{target}", "ipconfig"], check=False)
     except Exception as e:
         print(f"[!] WMI execution failed: {e}")
 
@@ -115,8 +113,8 @@ def simulate_15(target):  # Spoolss Named Pipe
     print(f"[+] Simulating Spoolss Named Pipe Access on {target}...")
     subprocess.run(["rpcclient", "-U", get_cred_str(), target, "-c", "netshareenumall"])
 
-def simulate_16(target):  # PsExec (Impacket)
-    print(f"[+] Simulating PsExec Execution on {target} using Impacket...")
+def simulate_16(target):  # PsExec (alternative method)
+    print(f"[+] Simulating PsExec Execution on {target}...")
     try:
         subprocess.run(["psexec.py", f"{args.username}:{args.password}@{target}", "cmd.exe"], check=False)
     except Exception as e:
