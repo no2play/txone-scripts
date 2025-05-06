@@ -6,9 +6,6 @@ import base64
 import requests
 import sys
 
-# Enable Impacket logging
-logger.init()
-
 rule_descriptions = {
     1: "BabyShark Agent Pattern",
     2: "Cobalt Strike Malleable Profile",
