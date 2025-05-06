@@ -69,15 +69,18 @@ Required Parameters
 
 | Rule ID | Description                                         | Requires Auth |
 |---------|-----------------------------------------------------|---------------|
-| 5       | Possible Lateral Tool Transfer via SMB             | ✅             |
-| 6       | Remote System Discovery Via RPC                    | ✅             |
-| 7       | Execution Via WMI                                  | ✅             |
-| 16      | Spoolss Named Pipe Access via SMB                  | ✅             |
-| 17      | Possible PsExec Execution                          | ✅             |
-| 25      | Suspicious User Agent                              | ❌             |
-| 26      | Suspicious Base64 Encoded User-Agent               | ❌             |
-| 30      | Potential Network Sweep Detected                   | ❌             |
-| 31      | Potential Port Scan Detected                       | ❌             |
+| 1       | BabyShark Agent Pattern                            | ❌             |
+| 2       | RCobalt Strike Malleable Profile                   | ❌             |
+| 3       | WannaCry Killswitch Domain                         | ❌             |
+| 4       | Possible Lateral Tool Transfer via SMB             | ✅             |
+| 5       | Remote System Discovery Via RPC                    | ✅             |
+| 6       | Execution Via WMI                                  | ✅             |
+| 15      | Spoolss Named Pipe Access via SMB                  | ✅             |
+| 16      | Possible PsExec Execution                          | ✅             |
+| 24      | Suspicious User Agent                              | ❌             |
+| 25      | Suspicious Base64 Encoded User-Agent               | ❌             |
+| 29      | Potential Network Sweep Detected                   | ❌             |
+| 30      | Potential Port Scan Detected                       | ❌             |
 
 
 ## 🧑‍💻 Examples
