@@ -11,6 +11,7 @@ This repository contains tools to simulate detections for TXOne Edge IPS. It inc
 
 - `cpsdr_simulator.py`: Simulates CPSDR event patterns (e.g., User-Agent anomalies, RPC discovery, lateral movement).
 - `dos_attack_simulator.py`: Simulates common DoS attacks and port scan activity.
+- `send_mac.py`: Send raw Ethernet (Layer 2) frames directly from a source MAC to a target MAC address.
 
 ---
 
@@ -145,19 +146,68 @@ python3 dos_attack_simulator.py ping-sweep 192.168.1.10 5
 ```
 
 💡 Available Attack Types
-- syn-flood
-- udp-flood
-- icmp-flood
-- tcp-scan-syn
-- tcp-scan-null
-- tcp-scan-xmas
-- ping-sweep
+- `syn-flood`
+- `udp-flood`
+- `icmp-flood`
+- `tcp-scan-syn`
+- `tcp-scan-null`
+- `tcp-scan-xmas`
+- `ping-sweep`
 
-## ⚠️ Warning
+# 📡 MAC Sender – Raw Ethernet Frame Sender
+
+A Python script using Scapy to send raw Ethernet (Layer 2) frames directly from a source MAC to a target MAC address. Useful for MAC-level testing, network diagnostics, or protocol fuzzing.
+
+## 📦 Requirements
+
+- Python 3.x
+- Scapy
+Install with:
+```bash
+sudo apt install python3-scapy
+```
+
+## 🛠 Usage
+```bash
+sudo python3 mac_sender.py -t <TARGET_MAC> -s <SOURCE_MAC> [options]
+```
+
+## 🔧 Arguments
+
+| Argument | Description |
+|----------|-------------|
+| `-t, --target` |	(Required) Target MAC address |
+| `-s, --source` |	(Required) Source MAC address |
+| `-i, --interface` |	Network interface to use (default: Scapy's default interface) |
+| `-c, --count` |	Number of frames to send (default: 1) |
+| `-p, --payload` |	Custom payload string (default: "HelloMAC") |
+| `-h, --help` |	Show help message and exit |
+
+## 📋 Examples
+
+Send a single frame from one MAC to another:
+```bash
+sudo python3 mac_sender.py -t 00:50:56:b9:01:cd -s 00:0c:29:e2:10:24
+```
+Send 10 frames with custom payload:
+```bash
+sudo python3 mac_sender.py -t AA:BB:CC:DD:EE:FF -s 11:22:33:44:55:66 -c 10 -p "PingMAC"
+```
+Use a specific interface:
+```bash
+sudo python3 mac_sender.py -t 00:11:22:33:44:55 -s 66:77:88:99:AA:BB -i eth1
+```
+## ⚠️ Notes
+
+- Requires root privileges (`sudo`) to send raw Ethernet frames.
+- Both sender and target must be on the same Layer 2 broadcast domain.
+- Make sure firewalls or security tools do not block raw frame transmission.
+
+# ⚠️ Warning
 
 This toolkit is for educational and internal testing only. Only use it on systems you own or are explicitly authorized to test. Unauthorized use may be illegal.
 
-## 👨‍💻 Author
+# 👨‍💻 Author
 
 Created and maintained by no2play
 
