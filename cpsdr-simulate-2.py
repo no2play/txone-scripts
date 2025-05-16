@@ -6,19 +6,6 @@ import base64
 import requests
 import sys
 
-# Try importing OT protocol libs with friendly errors
-try:
-    from pymodbus.client import ModbusTcpClient
-except ImportError:
-    print("[!] pymodbus library is not installed. Please run: pip install pymodbus")
-    sys.exit(1)
-
-try:
-    from snap7 import client as snap7_client
-except ImportError:
-    print("[!] snap7 library is not installed. Please run: pip install python-snap7")
-    sys.exit(1)
-
 rule_descriptions = {
     1: "BabyShark Agent Pattern",
     2: "Cobalt Strike Malleable Profile",
@@ -188,6 +175,13 @@ def simulate_30(target):
     subprocess.run(["nmap", "-p-", target])
 
 def simulate_32(target):
+
+    try:
+        from pymodbus.client import ModbusTcpClient
+    except ImportError:
+        print("[!] pymodbus library is not installed. Please run: pip install pymodbus")
+        sys.exit(1)
+    
     print(f"[+] Detect Modbus Diagnostic (Force Listen Only Mode) on {target}...")
     client = ModbusTcpClient(target)
     if not client.connect():
@@ -201,6 +195,13 @@ def simulate_32(target):
     client.close()
 
 def simulate_33(target):
+
+    try:
+        from snap7 import client as snap7_client
+    except ImportError:
+        print("[!] snap7 library is not installed. Please run: pip install python-snap7")
+        sys.exit(1)
+    
     print(f"[+] Detect Siemens SIMATIC S7 PLC STOP command on {target}...")
     plc = snap7_client.Client()
     try:
